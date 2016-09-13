@@ -14,9 +14,11 @@ function ajax(url, options, callback, data, cache) {
   let workData = data && JSON.parse(JSON.stringify(data));
   if (isValid) {
     let y = '';
-    workData.forEach((m) => {
+    /* eslint-disable */
+    for (const m in data) {
       y += `&${encodeURIComponent(m)}=${encodeURIComponent(workData[m])}`;
-    });
+    }
+    /* eslint-enable */
     workData = y.slice(1);
     if (!cache) {
       workData += `&_t=${new Date}`;
