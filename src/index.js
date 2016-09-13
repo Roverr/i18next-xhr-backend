@@ -11,7 +11,7 @@ function open(x, url, data) {
 function ajax(url, options, callback, data, cache) {
   const dataObject = (typeof data === 'object');
   const isValid = data && dataObject;
-  let workData = data && JSON.parse(JSON.stringify(data));
+  let workData = data;
   if (isValid) {
     let y = '';
     /* eslint-disable */
@@ -128,10 +128,7 @@ class Backend {
       const interpolater = { lng, ns };
       const url = this.services.interpolator.interpolate(this.options.addPath, interpolater);
 
-      this.options.ajax(url, this.options, (data, xhr) => {
-        // const statusCode = xhr.status.toString();
-        // TODO: if statusCode === 4xx do log
-      }, payload);
+      this.options.ajax(url, this.options, () => {}, payload);
     });
   }
 }

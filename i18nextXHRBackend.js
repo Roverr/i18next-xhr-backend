@@ -67,7 +67,7 @@
   function ajax(url, options, callback, data, cache) {
     var dataObject = (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
     var isValid = data && dataObject;
-    var workData = data && JSON.parse(JSON.stringify(data));
+    var workData = data;
     if (isValid) {
       var y = '';
       /* eslint-disable */
@@ -201,10 +201,7 @@
           var interpolater = { lng: lng, ns: ns };
           var url = _this2.services.interpolator.interpolate(_this2.options.addPath, interpolater);
 
-          _this2.options.ajax(url, _this2.options, function (data, xhr) {
-            // const statusCode = xhr.status.toString();
-            // TODO: if statusCode === 4xx do log
-          }, payload);
+          _this2.options.ajax(url, _this2.options, function () {}, payload);
         });
       }
     }]);
