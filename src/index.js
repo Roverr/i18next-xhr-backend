@@ -44,7 +44,7 @@ function ajax(url, options, callback, data, cache) {
     x.send(data);
   } catch (e) {
     if (window.console) {
-      return console.log(e); // eslint-disable-line no-console
+      return console.error(e); // eslint-disable-line no-console
     }
   }
   return null;

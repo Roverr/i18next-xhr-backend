@@ -26,6 +26,12 @@
     return obj;
   }
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+  };
+
   var classCallCheck = function (instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -59,14 +65,16 @@
   }
 
   function ajax(url, options, callback, data, cache) {
-    var dataObject = data === 'object';
+    var dataObject = (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
     var isValid = data && dataObject;
     var workData = data && JSON.parse(JSON.stringify(data));
     if (isValid) {
       var y = '';
-      workData.forEach(function (m) {
+      /* eslint-disable */
+      for (var m in data) {
         y += '&' + encodeURIComponent(m) + '=' + encodeURIComponent(workData[m]);
-      });
+      }
+      /* eslint-enable */
       workData = y.slice(1);
       if (!cache) {
         workData += '&_t=' + new Date();
@@ -94,7 +102,7 @@
       })();
     } catch (e) {
       if (window.console) {
-        return console.log(e); // eslint-disable-line no-console
+        return console.error(e); // eslint-disable-line no-console
       }
     }
     return null;
