@@ -9,7 +9,7 @@ function open(x, url, data) {
 }
 
 function ajax(url, options, callback, data, cache) {
-  const dataObject = (data === 'object');
+  const dataObject = (typeof data === 'object');
   const isValid = data && dataObject;
   let workData = data && JSON.parse(JSON.stringify(data));
   if (isValid) {
