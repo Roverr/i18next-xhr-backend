@@ -13,7 +13,7 @@
     }
 
     each.call(args, function (source) {
-      if (!source) {
+      if (source === undefined) {
         return;
       }
       for (var prop in source) {

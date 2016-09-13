@@ -3,7 +3,7 @@ const each = arr.forEach;
 
 export function defaults(obj, ...args) {
   each.call(args, (source) => {
-    if (!source) {
+    if (source === undefined) {
       return;
     }
     for (const prop in source) { // eslint-disable-line no-restricted-syntax
