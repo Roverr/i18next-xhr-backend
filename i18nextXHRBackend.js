@@ -6,13 +6,20 @@
 
   var arr = [];
   var each = arr.forEach;
-  var slice = arr.slice;
 
   function defaults(obj) {
-    each.call(slice.call(arguments, 1), function (source) {
-      if (source) {
-        for (var prop in source) {
-          if (obj[prop] === undefined) obj[prop] = source[prop];
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    each.call(args, function (source) {
+      if (source === undefined) {
+        return;
+      }
+      for (var prop in source) {
+        // eslint-disable-line no-restricted-syntax
+        if (obj[prop] === undefined) {
+          obj[prop] = source[prop]; // eslint-disable-line no-param-reassign
         }
       }
     });
@@ -49,66 +56,57 @@
     };
   }();
 
-  // https://gist.github.com/Xeoncross/7663273
+  function open(x, url, data) {
+    var method = 'GET';
+    if (data) {
+      method = 'POST';
+    }
+    x.open(method, url, 1);
+  }
+
   function ajax(url, options, callback, data, cache) {
-    // Must encode data
-    if (data && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
-      var y = '',
-          e = encodeURIComponent;
+    var dataObject = (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
+    var isValid = data && dataObject;
+    var workData = data;
+    if (isValid) {
+      var y = '';
+      /* eslint-disable */
       for (var m in data) {
-        y += '&' + e(m) + '=' + e(data[m]);
+        y += '&' + encodeURIComponent(m) + '=' + encodeURIComponent(workData[m]);
       }
-      data = y.slice(1) + (!cache ? '&_t=' + new Date() : '');
+      /* eslint-enable */
+      workData = y.slice(1);
+      if (!cache) {
+        workData += '&_t=' + new Date();
+      }
     }
 
     try {
-      var x = new (XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
-      x.open(data ? 'POST' : 'GET', url, 1);
-      if (!options.crossDomain) {
-        x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-      }
-      if (data) {
-        x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-      }
-      x.onreadystatechange = function () {
-        x.readyState > 3 && callback && callback(x.responseText, x);
-      };
-      x.send(data);
+      (function () {
+        var x = new (XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0'); // eslint-disable-line no-undef
+        open(x, url, workData);
+        if (!options.crossDomain) {
+          x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        }
+        if (data) {
+          x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        }
+        x.onreadystatechange = function onReadyStateChange() {
+          var correctState = x.readyState > 3;
+          if (correctState && callback) {
+            return callback(x.responseText, x);
+          }
+          return null;
+        };
+        x.send(data);
+      })();
     } catch (e) {
-      window.console && console.log(e);
+      if (window.console) {
+        return console.error(e); // eslint-disable-line no-console
+      }
     }
-  };
-
-  // ajax.uriEncode = function(o) {
-  //     var x, y = '', e = encodeURIComponent;
-  //     for (x in o) y += '&' + e(x) + '=' + e(o[x]);
-  //     return y.slice(1);
-  // };
-  //
-  // ajax.collect = (a, f) {
-  //     var n = [];
-  //     for (var i = 0; i < a.length; i++) {
-  //         var v = f(a[i]);
-  //         if (v != null) n.push(v);
-  //     }
-  //     return n;
-  // };
-  //
-  // ajax.serialize = function (f) {
-  //     function g(n) {
-  //         return f.getElementsByTagName(n);
-  //     };
-  //     var nv = function (e) {
-  //         if (e.name) return encodeURIComponent(e.name) + '=' + encodeURIComponent(e.value);
-  //     };
-  //     var i = collect(g('input'), function (i) {
-  //         if ((i.type != 'radio' && i.type != 'checkbox') || i.checked) return nv(i);
-  //     });
-  //     var s = collect(g('select'), nv);
-  //     var t = collect(g('textarea'), nv);
-  //     return i.concat(s).concat(t).join('&');
-  // };
-  //
+    return null;
+  }
 
   function getDefaults() {
     return {
@@ -169,37 +167,41 @@
         var _this = this;
 
         this.options.ajax(url, this.options, function (data, xhr) {
-          if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
-          if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
+          if (xhr.status >= 500 && xhr.status < 600) {
+            return callback('failed loading ' + url, true /* retry */);
+          }
+          if (xhr.status >= 400 && xhr.status < 500) {
+            return callback('failed loading ' + url, false /* no retry */);
+          }
 
-          var ret = void 0,
-              err = void 0;
+          var ret = void 0;
           try {
             ret = _this.options.parse(data, url);
           } catch (e) {
-            err = 'failed parsing ' + url + ' to json';
+            var err = 'failed parsing ' + url + ' to json';
+            return callback(err, false);
           }
-          if (err) return callback(err, false);
-          callback(null, ret);
+          return callback(null, ret);
         });
       }
     }, {
       key: 'create',
-      value: function create(languages, namespace, key, fallbackValue) {
+      value: function create(recievedLanguages, ns, key, fallbackValue) {
         var _this2 = this;
 
-        if (typeof languages === 'string') languages = [languages];
+        var languages = recievedLanguages;
+        if (typeof recievedLanguages === 'string') {
+          languages = [recievedLanguages];
+        }
 
         var payload = {};
         payload[key] = fallbackValue || '';
 
         languages.forEach(function (lng) {
-          var url = _this2.services.interpolator.interpolate(_this2.options.addPath, { lng: lng, ns: namespace });
+          var interpolater = { lng: lng, ns: ns };
+          var url = _this2.services.interpolator.interpolate(_this2.options.addPath, interpolater);
 
-          _this2.options.ajax(url, _this2.options, function (data, xhr) {
-            //const statusCode = xhr.status.toString();
-            // TODO: if statusCode === 4xx do log
-          }, payload);
+          _this2.options.ajax(url, _this2.options, function () {}, payload);
         });
       }
     }]);
